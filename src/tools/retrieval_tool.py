@@ -4,8 +4,8 @@ Tool for retrieving relevant information from the knowledge base
 """
 
 from typing import Optional
-from langchain.tools import Tool
-from langchain.callbacks.manager import CallbackManagerForToolRun
+from langchain_core.tools import Tool
+from langchain_core.callbacks.manager import CallbackManagerForToolRun
 
 
 class RetrievalTool:

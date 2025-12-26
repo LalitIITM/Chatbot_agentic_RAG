@@ -5,11 +5,18 @@ Handles document loading, embedding, and vector storage using ChromaDB
 
 import os
 from typing import List, Optional
-from langchain_community.document_loaders import DirectoryLoader, TextLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.document_loaders import (
+    DirectoryLoader, 
+    TextLoader,
+    PyPDFLoader,
+    UnstructuredMarkdownLoader,
+    CSVLoader,
+    UnstructuredWordDocumentLoader
+)
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
-from langchain.schema import Document
+from langchain_core.documents import Document
 
 
 class VectorStoreManager:
@@ -44,26 +51,71 @@ class VectorStoreManager:
         self.vectorstore: Optional[Chroma] = None
     
     def load_documents(self) -> List[Document]:
-        """Load documents from the documents directory"""
+        """Load documents from the documents directory
+        
+        Supports multiple file formats:
+        - .txt (Text files)
+        - .pdf (PDF documents)
+        - .md (Markdown files)
+        - .csv (CSV files)
+        - .docx (Word documents)
+        """
         if not os.path.exists(self.documents_dir):
             os.makedirs(self.documents_dir)
             print(f"Created documents directory: {self.documents_dir}")
             return []
         
-        loader = DirectoryLoader(
-            self.documents_dir,
-            glob="**/*.txt",
-            loader_cls=TextLoader,
-            show_progress=True
-        )
+        all_documents = []
         
-        try:
-            documents = loader.load()
-            print(f"Loaded {len(documents)} documents")
-            return documents
-        except Exception as e:
-            print(f"Error loading documents: {e}")
-            return []
+        # Define loaders for different file types that work with DirectoryLoader
+        # Note: PDF and DOCX files are handled separately below because they
+        # require different initialization (file path vs directory path)
+        loaders_config = [
+            {"glob": "**/*.txt", "loader_cls": TextLoader},
+            {"glob": "**/*.md", "loader_cls": UnstructuredMarkdownLoader},
+            {"glob": "**/*.csv", "loader_cls": CSVLoader},
+        ]
+        
+        # Load documents for each file type
+        for config in loaders_config:
+            try:
+                loader = DirectoryLoader(
+                    self.documents_dir,
+                    glob=config["glob"],
+                    loader_cls=config["loader_cls"],
+                    show_progress=False,
+                    silent_errors=True
+                )
+                documents = loader.load()
+                if documents:
+                    print(f"Loaded {len(documents)} {config['glob']} files")
+                    all_documents.extend(documents)
+            except Exception as e:
+                print(f"Error loading {config['glob']} files: {e}")
+        
+        # Helper function to load files individually (for PDF and DOCX)
+        def load_files_individually(extension: str, loader_class):
+            """Load files one by one for loaders that require file paths"""
+            try:
+                files = [f for f in os.listdir(self.documents_dir) if f.endswith(extension)]
+                for file in files:
+                    try:
+                        file_path = os.path.join(self.documents_dir, file)
+                        loader = loader_class(file_path)
+                        documents = loader.load()
+                        all_documents.extend(documents)
+                        print(f"Loaded {extension.upper()}: {file}")
+                    except Exception as e:
+                        print(f"Error loading {extension} {file}: {e}")
+            except Exception as e:
+                print(f"Error processing {extension} files: {e}")
+        
+        # Load PDF and DOCX files using individual file loaders
+        load_files_individually('.pdf', PyPDFLoader)
+        load_files_individually('.docx', UnstructuredWordDocumentLoader)
+        
+        print(f"Total documents loaded: {len(all_documents)}")
+        return all_documents
     
     def split_documents(self, documents: List[Document]) -> List[Document]:
         """Split documents into chunks"""
