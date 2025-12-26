@@ -8,6 +8,7 @@ import sys
 from flask import Flask, render_template, request, jsonify
 from dotenv import load_dotenv
 from src.utils.vector_store import VectorStoreManager
+from src.utils.query_cache import QueryCache
 from src.tools.retrieval_tool import RetrievalTool
 from src.agents.rag_agent import AgenticRAGAgent
 
@@ -28,6 +29,7 @@ app.config['SECRET_KEY'] = secret_key
 
 # Global chatbot instance
 chatbot_agent = None
+query_cache_instance = None
 
 
 def initialize_chatbot(documents_dir: str = "data/documents"):
@@ -37,7 +39,7 @@ def initialize_chatbot(documents_dir: str = "data/documents"):
     Args:
         documents_dir: Directory containing documents to index
     """
-    global chatbot_agent
+    global chatbot_agent, query_cache_instance
     
     # Verify API key
     if not os.getenv("OPENAI_API_KEY"):
@@ -62,6 +64,23 @@ def initialize_chatbot(documents_dir: str = "data/documents"):
     retrieval_tool = RetrievalTool(retriever)
     tools = [retrieval_tool.as_tool()]
     
+    # Initialize query cache
+    print("\n💾 Setting up query cache...")
+    cache_enabled = os.getenv("QUERY_CACHE_ENABLED", "True").lower() == "true"
+    similarity_threshold = float(os.getenv("QUERY_CACHE_SIMILARITY_THRESHOLD", "0.95"))
+    cache_ttl = int(os.getenv("QUERY_CACHE_TTL", "86400"))  # 24 hours
+    
+    query_cache_instance = QueryCache(
+        enabled=cache_enabled,
+        similarity_threshold=similarity_threshold,
+        cache_ttl=cache_ttl
+    )
+    
+    if cache_enabled:
+        print(f"  Cache enabled (threshold: {similarity_threshold}, TTL: {cache_ttl/3600:.1f}h)")
+    else:
+        print("  Cache disabled")
+    
     # Initialize agent
     print("\n🧠 Initializing agent...")
     model_name = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
@@ -69,7 +88,8 @@ def initialize_chatbot(documents_dir: str = "data/documents"):
     chatbot_agent = AgenticRAGAgent(
         tools=tools,
         model_name=model_name,
-        verbose=verbose  # Configurable via CHATBOT_VERBOSE env var
+        verbose=verbose,  # Configurable via CHATBOT_VERBOSE env var
+        query_cache=query_cache_instance
     )
     
     print("\n✅ Chatbot initialized successfully!")
