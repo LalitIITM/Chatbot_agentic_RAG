@@ -40,8 +40,14 @@ class QueryCache:
         self.cache_store: Optional[Chroma] = None
         
         if self.enabled:
-            self.embeddings = OpenAIEmbeddings(model=embedding_model)
-            self._initialize_cache()
+            try:
+                self.embeddings = OpenAIEmbeddings(model=embedding_model)
+                self._initialize_cache()
+            except Exception as e:
+                print(f"Warning: Failed to initialize cache (likely missing API key): {str(e)}")
+                print("Cache will be disabled.")
+                self.enabled = False
+                self.embeddings = None
     
     def _initialize_cache(self):
         """Initialize or load the cache store"""
@@ -115,6 +121,10 @@ class QueryCache:
             
             return None
             
+        except ValueError as e:
+            # API key or configuration error
+            print(f"Configuration error retrieving from cache: {str(e)}")
+            return None
         except Exception as e:
             print(f"Error retrieving from cache: {str(e)}")
             return None
@@ -160,6 +170,9 @@ class QueryCache:
             self.cache_store.add_documents([doc])
             print(f"✓ Cached query-response pair")
             
+        except ValueError as e:
+            # API key or configuration error
+            print(f"Configuration error storing in cache: {str(e)}")
         except Exception as e:
             print(f"Error storing in cache: {str(e)}")
     

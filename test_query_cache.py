@@ -55,7 +55,6 @@ def test_query_cache_initialization():
             print("✓ QueryCache initialized with caching enabled")
             
             # Clean up
-            import shutil
             if os.path.exists("test_cache_enabled"):
                 shutil.rmtree("test_cache_enabled")
         else:
