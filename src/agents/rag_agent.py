@@ -134,7 +134,8 @@ Always be helpful, accurate, and concise in your responses."""
             
             return response_text
         except Exception as e:
-            return f"Error processing message: {str(e)}"
+            error_type = type(e).__name__
+            return f"Error processing message ({error_type}): {str(e)}"
     
     def reset_memory(self):
         """Clear the conversation history"""

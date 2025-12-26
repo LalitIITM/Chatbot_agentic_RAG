@@ -54,19 +54,10 @@ class QueryCache:
             )
         else:
             print(f"Creating new query cache at {self.persist_directory}")
-            # Create with a dummy document to initialize
-            dummy_doc = Document(
-                page_content="cache_initialization",
-                metadata={
-                    "response": "initialization",
-                    "timestamp": time.time(),
-                    "session_id": "init"
-                }
-            )
-            self.cache_store = Chroma.from_documents(
-                documents=[dummy_doc],
-                embedding=self.embeddings,
+            # Create empty collection - ChromaDB will initialize properly
+            self.cache_store = Chroma(
                 persist_directory=self.persist_directory,
+                embedding_function=self.embeddings,
                 collection_name="query_cache"
             )
     
@@ -96,9 +87,15 @@ class QueryCache:
             
             doc, score = results[0]
             
-            # Convert distance to similarity (Chroma returns L2 distance)
-            # Lower distance = higher similarity
-            # We need to convert this to a 0-1 similarity score
+            # Convert ChromaDB's L2 distance to similarity score
+            # ChromaDB returns L2 (Euclidean) distance where:
+            # - Distance of 0 = perfect match (same vectors)
+            # - Larger distance = less similar vectors
+            # We convert to similarity score (0-1) where 1 = perfect match:
+            # Formula: similarity = 1 / (1 + distance)
+            # - distance=0 → similarity=1.0 (perfect match)
+            # - distance=1 → similarity=0.5
+            # - distance=10 → similarity=0.09
             similarity = 1 / (1 + score)
             
             # Check if similarity meets threshold
@@ -109,10 +106,6 @@ class QueryCache:
             timestamp = doc.metadata.get("timestamp", 0)
             if time.time() - timestamp > self.cache_ttl:
                 print(f"Cache hit but expired (age: {int(time.time() - timestamp)}s)")
-                return None
-            
-            # Skip dummy initialization document
-            if doc.page_content == "cache_initialization":
                 return None
             
             response = doc.metadata.get("response")
