@@ -100,6 +100,8 @@ def main():
     # Check content of key files
     print("\n3. Checking key components...")
     
+    all_components_valid = True
+    
     # Check requirements.txt
     with open("requirements.txt", 'r') as f:
         requirements = f.read()
@@ -109,7 +111,7 @@ def main():
             print(f"  ✓ {package} in requirements.txt")
         else:
             print(f"  ✗ {package} missing from requirements.txt")
-            all_syntax_valid = False
+            all_components_valid = False
     
     # Check .env.example
     with open(".env.example", 'r') as f:
@@ -118,13 +120,14 @@ def main():
         print(f"  ✓ OPENAI_API_KEY in .env.example")
     else:
         print(f"  ✗ OPENAI_API_KEY missing from .env.example")
+        all_components_valid = False
     
     # Final summary
     print("\n" + "="*60)
     print("Validation Summary")
     print("="*60)
     
-    if all_files_present and all_syntax_valid:
+    if all_files_present and all_syntax_valid and all_components_valid:
         print("\n✓ All validations passed!")
         print("\n📋 Next steps to use the chatbot:")
         print("  1. Install dependencies:")
