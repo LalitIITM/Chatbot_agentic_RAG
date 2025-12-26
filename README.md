@@ -124,7 +124,7 @@ Chatbot_agentic_RAG/
 ├── templates/             # HTML templates for web interface
 │   └── index.html         # Main chat interface
 ├── data/
-│   └── documents/         # Place your documents here (.txt files)
+│   └── documents/         # Place your documents here (txt, pdf, md, csv, docx)
 ├── src/
 │   ├── agents/
 │   │   └── rag_agent.py   # Agentic RAG implementation
@@ -137,9 +137,16 @@ Chatbot_agentic_RAG/
 
 ## 📚 Adding Your Own Documents
 
-1. Place your text documents (`.txt` files) in the `data/documents/` directory
+1. Place your documents in the `data/documents/` directory
 2. The chatbot will automatically load and index them on startup
 3. The vector store is persisted in `chroma_db/`, so documents are only processed once
+
+**Supported file formats:**
+- `.txt` - Plain text files
+- `.pdf` - PDF documents
+- `.md` - Markdown files
+- `.csv` - CSV data files
+- `.docx` - Microsoft Word documents
 
 ## 🔧 Configuration
 

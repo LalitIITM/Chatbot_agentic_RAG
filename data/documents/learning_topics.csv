@@ -1,0 +1,16 @@
+Topic,Category,Description,Difficulty,Prerequisites
+Python Basics,Programming,"Learn fundamental Python syntax, data types, and control structures",Beginner,None
+Data Structures,Programming,"Study arrays, linked lists, stacks, queues, trees, and graphs",Intermediate,Python Basics
+Algorithms,Computer Science,"Master sorting, searching, dynamic programming, and greedy algorithms",Intermediate,Data Structures
+Machine Learning,AI,"Introduction to supervised and unsupervised learning techniques",Advanced,"Python Basics, Statistics"
+Deep Learning,AI,"Neural networks, CNNs, RNNs, and transformer architectures",Advanced,Machine Learning
+Natural Language Processing,AI,"Text processing, sentiment analysis, and language models",Advanced,Machine Learning
+Computer Vision,AI,"Image processing, object detection, and image segmentation",Advanced,Deep Learning
+Web Development,Programming,"HTML, CSS, JavaScript, and modern web frameworks",Beginner,None
+Database Design,Backend,"Relational databases, SQL, normalization, and indexing",Intermediate,None
+API Development,Backend,"RESTful APIs, authentication, and API best practices",Intermediate,Web Development
+Cloud Computing,DevOps,"AWS, Azure, GCP services and cloud architecture patterns",Intermediate,Web Development
+Docker & Kubernetes,DevOps,"Containerization and orchestration for modern applications",Advanced,Cloud Computing
+Git & Version Control,Tools,"Source control, branching strategies, and collaboration",Beginner,None
+Testing & QA,Software Engineering,"Unit testing, integration testing, and test-driven development",Intermediate,Programming
+Agile Methodology,Project Management,"Scrum, Kanban, and agile project management practices",Beginner,None
