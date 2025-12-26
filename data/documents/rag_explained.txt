@@ -1,0 +1,31 @@
+Retrieval-Augmented Generation (RAG)
+
+RAG is a technique that combines the power of large language models (LLMs) with external knowledge retrieval. Instead of relying solely on the knowledge encoded in the model's parameters during training, RAG systems can access and incorporate relevant information from external sources in real-time.
+
+How RAG Works:
+
+1. Query Processing: When a user asks a question, the system processes the query.
+
+2. Retrieval Phase: The system searches through a knowledge base (often using vector embeddings) to find relevant documents or passages that might help answer the question.
+
+3. Augmentation: The retrieved information is combined with the original query.
+
+4. Generation: The language model generates a response using both its pre-trained knowledge and the retrieved context.
+
+Benefits of RAG:
+
+- Up-to-date Information: Can access recent information not in the training data
+- Reduced Hallucination: Grounds responses in factual retrieved content
+- Source Attribution: Can cite sources for generated information
+- Customization: Easy to adapt to specific domains by updating the knowledge base
+- Efficiency: More cost-effective than retraining large models
+
+Agentic RAG:
+
+Agentic RAG takes the concept further by giving the system the ability to:
+- Reason about what information is needed
+- Decide when and how to use retrieval tools
+- Plan multi-step information gathering
+- Self-critique and refine responses
+
+This makes the system more autonomous and capable of handling complex queries that require multiple retrieval steps or reasoning chains.
