@@ -53,16 +53,35 @@ The system consists of several key components:
 
 ## 📖 Usage
 
-### Running the Chatbot
+### Option 1: Web Interface (Recommended) 🌐
 
-Start the chatbot with:
+Start the web application with a modern ChatGPT-like interface:
+```bash
+python app.py
+```
+
+Then open your browser and navigate to:
+```
+http://localhost:5000
+```
+
+**Features:**
+- Modern, ChatGPT-inspired interface with dark theme
+- Real-time chat interactions
+- Conversation history management
+- Responsive design for desktop and mobile
+- Easy-to-use example prompts to get started
+
+### Option 2: Command-Line Interface
+
+Start the traditional CLI chatbot with:
 ```bash
 python chatbot.py
 ```
 
-### Available Commands
+### CLI Commands
 
-Once the chatbot is running, you can use these commands:
+Once the CLI chatbot is running, you can use these commands:
 
 - Type any question to chat with the bot
 - `history` - View the conversation history
@@ -87,10 +106,13 @@ augmentation, and generation...
 
 ```
 Chatbot_agentic_RAG/
-├── chatbot.py              # Main application entry point
+├── app.py                  # Web application (Flask) - NEW! 🌐
+├── chatbot.py              # CLI application entry point
 ├── requirements.txt        # Python dependencies
 ├── .env.example           # Example environment variables
 ├── .gitignore             # Git ignore file
+├── templates/             # HTML templates for web interface
+│   └── index.html         # Main chat interface
 ├── data/
 │   └── documents/         # Place your documents here (.txt files)
 ├── src/
