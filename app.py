@@ -114,6 +114,13 @@ def chat():
                 'error': 'Empty message'
             }), 400
         
+        # Check if chatbot is initialized
+        if chatbot_agent is None:
+            return jsonify({
+                'success': False,
+                'error': 'Chatbot not initialized. Please check server logs.'
+            }), 503
+        
         # Get response from chatbot
         response = chatbot_agent.chat(user_message)
         
@@ -142,6 +149,13 @@ def reset():
     }
     """
     try:
+        # Check if chatbot is initialized
+        if chatbot_agent is None:
+            return jsonify({
+                'success': False,
+                'error': 'Chatbot not initialized. Please check server logs.'
+            }), 503
+        
         chatbot_agent.reset_memory()
         return jsonify({
             'success': True,

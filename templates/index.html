@@ -466,18 +466,30 @@
             contentDiv.className = 'message-content';
             
             // Convert newlines to paragraphs - handle multiple consecutive newlines
+            // Using textContent and manual <br> elements to prevent XSS
             const paragraphs = content.split('\n\n').filter(p => p.trim());
             if (paragraphs.length > 1) {
                 paragraphs.forEach(para => {
                     const p = document.createElement('p');
-                    // Replace single newlines within paragraphs with line breaks
-                    p.innerHTML = para.trim().replace(/\n/g, '<br>');
+                    const lines = para.trim().split('\n');
+                    lines.forEach((line, index) => {
+                        p.appendChild(document.createTextNode(line));
+                        if (index < lines.length - 1) {
+                            p.appendChild(document.createElement('br'));
+                        }
+                    });
                     contentDiv.appendChild(p);
                 });
             } else {
                 // Single paragraph - just replace newlines with breaks
                 const p = document.createElement('p');
-                p.innerHTML = content.trim().replace(/\n/g, '<br>');
+                const lines = content.trim().split('\n');
+                lines.forEach((line, index) => {
+                    p.appendChild(document.createTextNode(line));
+                    if (index < lines.length - 1) {
+                        p.appendChild(document.createElement('br'));
+                    }
+                });
                 contentDiv.appendChild(p);
             }
             
