@@ -130,10 +130,15 @@ def chat():
         })
         
     except Exception as e:
+        # Log detailed error server-side
         print(f"Error in chat endpoint: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        
+        # Return generic error to client for security
         return jsonify({
             'success': False,
-            'error': f'Error processing message: {str(e)}'
+            'error': 'An error occurred while processing your message. Please try again.'
         }), 500
 
 
@@ -162,9 +167,15 @@ def reset():
             'message': 'Conversation history cleared'
         })
     except Exception as e:
+        # Log detailed error server-side
+        print(f"Error in reset endpoint: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        
+        # Return generic error to client for security
         return jsonify({
             'success': False,
-            'error': f'Error resetting conversation: {str(e)}'
+            'error': 'An error occurred while resetting the conversation. Please try again.'
         }), 500
 
 
