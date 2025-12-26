@@ -2,14 +2,17 @@
 
 An intelligent chatbot built with **Agentic RAG** (Retrieval-Augmented Generation) that combines reasoning capabilities with knowledge retrieval to provide accurate, context-aware responses.
 
+**✨ Now with a modern ChatGPT-like web interface!** 🌐
+
 ## 🌟 Features
 
+- **Modern Web Interface**: ChatGPT-inspired UI with dark theme and responsive design 🎨
 - **Agentic Behavior**: The chatbot can reason about what information it needs and decide when to use retrieval tools
 - **RAG Pipeline**: Combines retrieval from a knowledge base with language model generation
 - **Conversation Memory**: Maintains context across the conversation
 - **Vector Search**: Uses ChromaDB and OpenAI embeddings for semantic search
 - **Extensible Tool System**: Easy to add new tools and capabilities
-- **Interactive CLI**: User-friendly command-line interface
+- **Interactive CLI**: User-friendly command-line interface (legacy mode)
 
 ## 🏗️ Architecture
 
@@ -71,6 +74,8 @@ http://localhost:5000
 - Conversation history management
 - Responsive design for desktop and mobile
 - Easy-to-use example prompts to get started
+
+**📘 For detailed frontend documentation, screenshots, and customization guide, see [FRONTEND_GUIDE.md](FRONTEND_GUIDE.md)**
 
 ### Option 2: Command-Line Interface
 
