@@ -49,9 +49,14 @@ The system consists of several key components:
 
 4. **Set up environment variables**:
    - Copy `.env.example` to `.env`
-   - Add your OpenAI API key to the `.env` file:
+   - Configure required settings in the `.env` file:
      ```
      OPENAI_API_KEY=your_openai_api_key_here
+     SECRET_KEY=your-random-secret-key-here
+     ```
+   - Generate a secure SECRET_KEY with:
+     ```bash
+     python -c "import secrets; print(secrets.token_hex(32))"
      ```
 
 ## 📖 Usage

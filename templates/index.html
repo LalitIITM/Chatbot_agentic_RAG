@@ -465,16 +465,20 @@
             const contentDiv = document.createElement('div');
             contentDiv.className = 'message-content';
             
-            // Convert newlines to paragraphs
-            const paragraphs = content.split('\n').filter(p => p.trim());
-            if (paragraphs.length > 0) {
+            // Convert newlines to paragraphs - handle multiple consecutive newlines
+            const paragraphs = content.split('\n\n').filter(p => p.trim());
+            if (paragraphs.length > 1) {
                 paragraphs.forEach(para => {
                     const p = document.createElement('p');
-                    p.textContent = para;
+                    // Replace single newlines within paragraphs with line breaks
+                    p.innerHTML = para.trim().replace(/\n/g, '<br>');
                     contentDiv.appendChild(p);
                 });
             } else {
-                contentDiv.textContent = content;
+                // Single paragraph - just replace newlines with breaks
+                const p = document.createElement('p');
+                p.innerHTML = content.trim().replace(/\n/g, '<br>');
+                contentDiv.appendChild(p);
             }
             
             messageDiv.appendChild(avatar);
@@ -575,7 +579,12 @@
         }
 
         async function resetChat() {
-            if (!confirm('Are you sure you want to start a new chat? This will clear the conversation history.')) {
+            // For now, we'll keep the simple approach but make it more accessible
+            // In a production app, you'd implement a proper modal dialog
+            const messagesContainer = document.getElementById('messages-container');
+            const hasMessages = messagesContainer.querySelector('.message') !== null;
+            
+            if (hasMessages && !confirm('Are you sure you want to start a new chat? This will clear the conversation history.')) {
                 return;
             }
             

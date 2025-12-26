@@ -58,9 +58,21 @@ The conversation view shows:
    
    Create a `.env` file in the root directory:
    ```env
+   # Required
    OPENAI_API_KEY=your_openai_api_key_here
+   SECRET_KEY=your-random-secret-key-here
+   
+   # Optional
    OPENAI_MODEL=gpt-3.5-turbo
    EMBEDDING_MODEL=text-embedding-ada-002
+   PORT=5000
+   FLASK_HOST=127.0.0.1
+   FLASK_DEBUG=False
+   ```
+   
+   **Security Note**: Generate a strong random SECRET_KEY. You can use Python:
+   ```bash
+   python -c "import secrets; print(secrets.token_hex(32))"
    ```
 
 3. **Add documents** (optional):
@@ -88,13 +100,19 @@ You can customize the server using environment variables in your `.env` file:
 ```env
 # Required
 OPENAI_API_KEY=your_api_key_here
+SECRET_KEY=your-random-secret-key-here
 
 # Optional
 PORT=5000                                    # Server port (default: 5000)
+FLASK_HOST=127.0.0.1                        # Server host (default: 127.0.0.1 for security)
 FLASK_DEBUG=False                           # Debug mode (default: False)
 OPENAI_MODEL=gpt-3.5-turbo                 # Or gpt-4 for better results
 EMBEDDING_MODEL=text-embedding-ada-002      # Embedding model
 ```
+
+**Important Configuration Notes:**
+- `FLASK_HOST=127.0.0.1` - Binds to localhost only for security. Use `0.0.0.0` to accept connections from any network interface (only in trusted networks)
+- `SECRET_KEY` - Required for Flask session security. Generate with: `python -c "import secrets; print(secrets.token_hex(32))"`
 
 ## 🎯 Using the Frontend
 

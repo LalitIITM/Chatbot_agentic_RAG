@@ -16,7 +16,15 @@ load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
+
+# Security: Require SECRET_KEY to be set explicitly
+secret_key = os.getenv('SECRET_KEY')
+if not secret_key:
+    raise ValueError(
+        "SECRET_KEY not found in environment variables. "
+        "Please set SECRET_KEY in your .env file for session security."
+    )
+app.config['SECRET_KEY'] = secret_key
 
 # Global chatbot instance
 chatbot_agent = None
@@ -163,12 +171,13 @@ def main():
         
         # Run the Flask app
         port = int(os.getenv('PORT', 5000))
+        host = os.getenv('FLASK_HOST', '127.0.0.1')  # Default to localhost for security
         debug = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
         
-        print(f"\n🌐 Starting web server on http://localhost:{port}")
+        print(f"\n🌐 Starting web server on http://{host}:{port}")
         print("Press Ctrl+C to stop the server\n")
         
-        app.run(host='0.0.0.0', port=port, debug=debug)
+        app.run(host=host, port=port, debug=debug)
         
     except Exception as e:
         print(f"\n❌ Failed to start application: {str(e)}")
