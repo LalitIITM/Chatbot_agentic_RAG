@@ -67,7 +67,9 @@ class VectorStoreManager:
         
         all_documents = []
         
-        # Define loaders for different file types
+        # Define loaders for different file types that work with DirectoryLoader
+        # Note: PDF and DOCX files are handled separately below because they
+        # require different initialization (file path vs directory path)
         loaders_config = [
             {"glob": "**/*.txt", "loader_cls": TextLoader},
             {"glob": "**/*.md", "loader_cls": UnstructuredMarkdownLoader},
@@ -91,35 +93,26 @@ class VectorStoreManager:
             except Exception as e:
                 print(f"Error loading {config['glob']} files: {e}")
         
-        # Load PDF files separately (require different handling)
-        try:
-            pdf_files = [f for f in os.listdir(self.documents_dir) if f.endswith('.pdf')]
-            for pdf_file in pdf_files:
-                try:
-                    pdf_path = os.path.join(self.documents_dir, pdf_file)
-                    loader = PyPDFLoader(pdf_path)
-                    documents = loader.load()
-                    all_documents.extend(documents)
-                    print(f"Loaded PDF: {pdf_file}")
-                except Exception as e:
-                    print(f"Error loading PDF {pdf_file}: {e}")
-        except Exception as e:
-            print(f"Error processing PDF files: {e}")
+        # Helper function to load files individually (for PDF and DOCX)
+        def load_files_individually(extension: str, loader_class):
+            """Load files one by one for loaders that require file paths"""
+            try:
+                files = [f for f in os.listdir(self.documents_dir) if f.endswith(extension)]
+                for file in files:
+                    try:
+                        file_path = os.path.join(self.documents_dir, file)
+                        loader = loader_class(file_path)
+                        documents = loader.load()
+                        all_documents.extend(documents)
+                        print(f"Loaded {extension.upper()}: {file}")
+                    except Exception as e:
+                        print(f"Error loading {extension} {file}: {e}")
+            except Exception as e:
+                print(f"Error processing {extension} files: {e}")
         
-        # Load DOCX files separately
-        try:
-            docx_files = [f for f in os.listdir(self.documents_dir) if f.endswith('.docx')]
-            for docx_file in docx_files:
-                try:
-                    docx_path = os.path.join(self.documents_dir, docx_file)
-                    loader = UnstructuredWordDocumentLoader(docx_path)
-                    documents = loader.load()
-                    all_documents.extend(documents)
-                    print(f"Loaded DOCX: {docx_file}")
-                except Exception as e:
-                    print(f"Error loading DOCX {docx_file}: {e}")
-        except Exception as e:
-            print(f"Error processing DOCX files: {e}")
+        # Load PDF and DOCX files using individual file loaders
+        load_files_individually('.pdf', PyPDFLoader)
+        load_files_individually('.docx', UnstructuredWordDocumentLoader)
         
         print(f"Total documents loaded: {len(all_documents)}")
         return all_documents
