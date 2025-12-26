@@ -37,6 +37,7 @@ ENV/
 
 # Chroma DB
 chroma_db/
+query_cache_db/
 *.db
 
 # Logs

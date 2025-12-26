@@ -7,6 +7,7 @@ import os
 import sys
 from dotenv import load_dotenv
 from src.utils.vector_store import VectorStoreManager
+from src.utils.query_cache import QueryCache
 from src.tools.retrieval_tool import RetrievalTool
 from src.agents.rag_agent import AgenticRAGAgent
 
@@ -48,13 +49,31 @@ class AgenticRAGChatbot:
         retrieval_tool = RetrievalTool(retriever)
         tools = [retrieval_tool.as_tool()]
         
+        # Initialize query cache
+        print("\n💾 Setting up query cache...")
+        cache_enabled = os.getenv("QUERY_CACHE_ENABLED", "True").lower() == "true"
+        similarity_threshold = float(os.getenv("QUERY_CACHE_SIMILARITY_THRESHOLD", "0.95"))
+        cache_ttl = int(os.getenv("QUERY_CACHE_TTL", "86400"))  # 24 hours
+        
+        self.query_cache = QueryCache(
+            enabled=cache_enabled,
+            similarity_threshold=similarity_threshold,
+            cache_ttl=cache_ttl
+        )
+        
+        if cache_enabled:
+            print(f"  Cache enabled (threshold: {similarity_threshold}, TTL: {cache_ttl/3600:.1f}h)")
+        else:
+            print("  Cache disabled")
+        
         # Initialize agent
         print("\n🧠 Initializing agent...")
         model_name = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
         self.agent = AgenticRAGAgent(
             tools=tools,
             model_name=model_name,
-            verbose=True
+            verbose=True,
+            query_cache=self.query_cache
         )
         
         print("\n✅ Chatbot initialized successfully!")

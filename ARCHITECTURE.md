@@ -4,8 +4,8 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    User Interface (CLI)                      │
-│                      (chatbot.py)                            │
+│                    User Interface (CLI/Web)                  │
+│                 (chatbot.py / app.py)                        │
 └────────────────────┬────────────────────────────────────────┘
                      │
                      ▼
@@ -13,31 +13,58 @@
 │                   Agentic RAG Agent                          │
 │            (src/agents/rag_agent.py)                         │
 │  ┌────────────┐  ┌──────────────┐  ┌──────────────────┐   │
-│  │   Memory   │  │  LLM (GPT)   │  │   Agent Loop     │   │
-│  │  (History) │  │              │  │   (Reasoning)    │   │
-│  └────────────┘  └──────────────┘  └──────────────────┘   │
-└────────────────────┬────────────────────────────────────────┘
-                     │
-                     ▼
-┌─────────────────────────────────────────────────────────────┐
-│                      Tool Layer                              │
-│            (src/tools/retrieval_tool.py)                     │
-└────────────────────┬────────────────────────────────────────┘
-                     │
-                     ▼
-┌─────────────────────────────────────────────────────────────┐
-│                 Vector Store Manager                         │
-│            (src/utils/vector_store.py)                       │
-│  ┌────────────┐  ┌──────────────┐  ┌──────────────────┐   │
-│  │ Documents  │  │  ChromaDB    │  │    Embeddings    │   │
-│  │  Loader    │  │ (VectorDB)   │  │    (OpenAI)      │   │
-│  └────────────┘  └──────────────┘  └──────────────────┘   │
-└─────────────────────────────────────────────────────────────┘
+│  │   Memory   │  │ Query Cache  │  │   Agent Loop     │   │
+│  │  (History) │  │  (Cost Opt.) │  │   (Reasoning)    │   │
+│  └────────────┘  └──────┬───────┘  └──────────────────┘   │
+└─────────────────────────┼────────────────┬─────────────────┘
+                          │                │
+                    Cache Hit?             │ Cache Miss
+                          │                │
+                          └────────────────▼
+                          ┌─────────────────────────────────────┐
+                          │          LLM (GPT)                  │
+                          └─────────────────────────────────────┘
+                                         │
+                                         ▼
+                          ┌─────────────────────────────────────┐
+                          │         Tool Layer                  │
+                          │   (src/tools/retrieval_tool.py)     │
+                          └────────────┬────────────────────────┘
+                                       │
+                                       ▼
+                          ┌─────────────────────────────────────┐
+                          │      Vector Store Manager           │
+                          │   (src/utils/vector_store.py)       │
+                          │  ┌──────────┐  ┌─────────────────┐ │
+                          │  │ ChromaDB │  │   Embeddings    │ │
+                          │  │(VectorDB)│  │    (OpenAI)     │ │
+                          │  └──────────┘  └─────────────────┘ │
+                          └─────────────────────────────────────┘
 ```
 
 ## Component Details
 
-### 1. Vector Store Manager (`src/utils/vector_store.py`)
+### 1. Query Cache (`src/utils/query_cache.py`) **NEW**
+
+**Responsibilities:**
+- Cache query-response pairs for cost optimization
+- Perform semantic similarity matching for queries
+- Manage cache expiration and TTL
+- Provide cache statistics
+
+**Key Features:**
+- ChromaDB-based persistent cache storage
+- Semantic similarity matching (not just exact matches)
+- Configurable similarity threshold
+- Time-to-live (TTL) for cache entries
+- Session-aware caching
+
+**Cost Savings:**
+- Reduces LLM API calls for similar queries
+- Only embedding cost for cache lookups (much cheaper than LLM calls)
+- Example: GPT-3.5 call ~$0.002/1K tokens vs embedding ~$0.0001/1K tokens
+
+### 2. Vector Store Manager (`src/utils/vector_store.py`)
 
 **Responsibilities:**
 - Load documents from filesystem
@@ -51,7 +78,7 @@
 - Configurable chunk size and overlap
 - Semantic search capabilities
 
-### 2. Retrieval Tool (`src/tools/retrieval_tool.py`)
+### 3. Retrieval Tool (`src/tools/retrieval_tool.py`)
 
 **Responsibilities:**
 - Expose retrieval as a tool for the agent
@@ -63,7 +90,7 @@
 - Clear tool description for agent reasoning
 - Error handling
 
-### 3. Agentic RAG Agent (`src/agents/rag_agent.py`)
+### 4. Agentic RAG Agent (`src/agents/rag_agent.py`)
 
 **Responsibilities:**
 - Coordinate between tools and LLM
@@ -74,10 +101,11 @@
 **Key Features:**
 - OpenAI Functions Agent (uses function calling)
 - Conversation memory
+- Query cache integration
 - Multi-step reasoning
 - Error recovery
 
-### 4. Main Application (`chatbot.py`)
+### 5. Main Application (`chatbot.py` / `app.py`)
 
 **Responsibilities:**
 - Initialize all components
@@ -87,16 +115,30 @@
 
 ## Data Flow
 
-### Question Answering Flow
+### Question Answering Flow (with Query Cache)
 
 1. **User Input**: User types a question
-2. **Agent Processing**: Agent receives the question
-3. **Reasoning**: Agent decides if it needs to search the knowledge base
-4. **Tool Use**: If needed, agent calls `knowledge_base_search` tool
-5. **Retrieval**: Tool queries vector store for relevant documents
-6. **Context Building**: Retrieved documents are added to context
+2. **Cache Check**: Agent checks query cache for similar queries
+   - **Cache Hit**: Return cached response immediately (add to memory for context)
+   - **Cache Miss**: Continue to step 3
+3. **Agent Processing**: Agent receives the question and processes it
+4. **Reasoning**: Agent decides if it needs to search the knowledge base
+5. **Tool Use**: If needed, agent calls `knowledge_base_search` tool
+6. **Retrieval**: Tool queries vector store for relevant documents
+7. **Context Building**: Retrieved documents are added to context
+8. **Generation**: LLM generates response using retrieved context
+9. **Cache Storage**: Store query-response pair in cache for future use
+10. **Response**: Answer is returned to user
 7. **Generation**: LLM generates response using retrieved context
 8. **Response**: Answer is returned to user
+
+### Query Cache Flow
+
+1. **Query Embedding**: User query is embedded using OpenAI embeddings
+2. **Similarity Search**: Search cached queries using semantic similarity
+3. **Threshold Check**: Compare similarity score against threshold
+4. **TTL Check**: Verify cached entry hasn't expired
+5. **Return**: If valid match found, return cached response; otherwise return None
 
 ### Document Indexing Flow
 

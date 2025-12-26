@@ -9,6 +9,7 @@ from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.memory import ConversationBufferMemory
 from langchain.tools import Tool
+from src.utils.query_cache import QueryCache
 
 
 class AgenticRAGAgent:
@@ -20,7 +21,9 @@ class AgenticRAGAgent:
         model_name: str = "gpt-3.5-turbo",
         temperature: float = 0.7,
         max_iterations: int = 10,
-        verbose: bool = True
+        verbose: bool = True,
+        query_cache: Optional[QueryCache] = None,
+        session_id: str = "default"
     ):
         """
         Initialize the agentic RAG agent
@@ -31,12 +34,16 @@ class AgenticRAGAgent:
             temperature: Temperature for generation
             max_iterations: Maximum reasoning iterations
             verbose: Whether to print agent reasoning
+            query_cache: Optional query cache for reducing LLM calls
+            session_id: Session identifier for cache and memory management
         """
         self.tools = tools
         self.model_name = model_name
         self.temperature = temperature
         self.max_iterations = max_iterations
         self.verbose = verbose
+        self.query_cache = query_cache
+        self.session_id = session_id
         
         # Initialize LLM
         self.llm = ChatOpenAI(
@@ -108,10 +115,27 @@ Always be helpful, accurate, and concise in your responses."""
             Agent's response
         """
         try:
+            # Check cache first if enabled
+            if self.query_cache:
+                cached_response = self.query_cache.get(message, self.session_id)
+                if cached_response:
+                    # Add to memory for context continuity
+                    self.memory.chat_memory.add_user_message(message)
+                    self.memory.chat_memory.add_ai_message(cached_response)
+                    return cached_response
+            
+            # Cache miss or caching disabled - invoke agent
             response = self.agent_executor.invoke({"input": message})
-            return response.get("output", "I apologize, but I couldn't generate a response.")
+            response_text = response.get("output", "I apologize, but I couldn't generate a response.")
+            
+            # Store in cache if enabled
+            if self.query_cache:
+                self.query_cache.set(message, response_text, self.session_id)
+            
+            return response_text
         except Exception as e:
-            return f"Error processing message: {str(e)}"
+            error_type = type(e).__name__
+            return f"Error processing message ({error_type}): {str(e)}"
     
     def reset_memory(self):
         """Clear the conversation history"""
