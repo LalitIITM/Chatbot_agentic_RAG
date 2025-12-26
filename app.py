@@ -65,10 +65,11 @@ def initialize_chatbot(documents_dir: str = "data/documents"):
     # Initialize agent
     print("\n🧠 Initializing agent...")
     model_name = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
+    verbose = os.getenv("CHATBOT_VERBOSE", "False").lower() == "true"
     chatbot_agent = AgenticRAGAgent(
         tools=tools,
         model_name=model_name,
-        verbose=False  # Disable verbose output for web interface
+        verbose=verbose  # Configurable via CHATBOT_VERBOSE env var
     )
     
     print("\n✅ Chatbot initialized successfully!")

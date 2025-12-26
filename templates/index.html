@@ -466,7 +466,7 @@
             contentDiv.className = 'message-content';
             
             // Convert newlines to paragraphs - handle multiple consecutive newlines
-            // Using textContent and manual <br> elements to prevent XSS
+            // XSS Prevention: Using createElement and textContent instead of innerHTML
             const paragraphs = content.split('\n\n').filter(p => p.trim());
             if (paragraphs.length > 1) {
                 paragraphs.forEach(para => {
@@ -590,7 +590,8 @@
                 }
             } catch (error) {
                 removeLoadingMessage();
-                showError('Network error: ' + error.message);
+                // Generic network error message for security
+                showError('Network error: Unable to connect to the server. Please try again.');
             } finally {
                 isLoading = false;
                 sendButton.disabled = false;
@@ -600,8 +601,8 @@
         }
 
         async function resetChat() {
-            // For now, we'll keep the simple approach but make it more accessible
-            // In a production app, you'd implement a proper modal dialog
+            // Simple confirmation dialog - works in all browsers
+            // For more advanced UI, consider implementing a custom modal
             const messagesContainer = document.getElementById('messages-container');
             const hasMessages = messagesContainer.querySelector('.message') !== null;
             
@@ -667,7 +668,8 @@
                     showError(data.error || 'Failed to reset chat');
                 }
             } catch (error) {
-                showError('Network error: ' + error.message);
+                // Generic network error message for security
+                showError('Network error: Unable to reset conversation. Please try again.');
             }
         }
 
