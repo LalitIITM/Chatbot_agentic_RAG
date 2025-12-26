@@ -2,14 +2,17 @@
 
 An intelligent chatbot built with **Agentic RAG** (Retrieval-Augmented Generation) that combines reasoning capabilities with knowledge retrieval to provide accurate, context-aware responses.
 
+**✨ Now with a modern ChatGPT-like web interface!** 🌐
+
 ## 🌟 Features
 
+- **Modern Web Interface**: ChatGPT-inspired UI with dark theme and responsive design 🎨
 - **Agentic Behavior**: The chatbot can reason about what information it needs and decide when to use retrieval tools
 - **RAG Pipeline**: Combines retrieval from a knowledge base with language model generation
 - **Conversation Memory**: Maintains context across the conversation
 - **Vector Search**: Uses ChromaDB and OpenAI embeddings for semantic search
 - **Extensible Tool System**: Easy to add new tools and capabilities
-- **Interactive CLI**: User-friendly command-line interface
+- **Interactive CLI**: User-friendly command-line interface (legacy mode)
 
 ## 🏗️ Architecture
 
@@ -46,23 +49,49 @@ The system consists of several key components:
 
 4. **Set up environment variables**:
    - Copy `.env.example` to `.env`
-   - Add your OpenAI API key to the `.env` file:
+   - Configure required settings in the `.env` file:
      ```
      OPENAI_API_KEY=your_openai_api_key_here
+     SECRET_KEY=your-random-secret-key-here
+     ```
+   - Generate a secure SECRET_KEY with:
+     ```bash
+     python -c "import secrets; print(secrets.token_hex(32))"
      ```
 
 ## 📖 Usage
 
-### Running the Chatbot
+### Option 1: Web Interface (Recommended) 🌐
 
-Start the chatbot with:
+Start the web application with a modern ChatGPT-like interface:
+```bash
+python app.py
+```
+
+Then open your browser and navigate to:
+```
+http://localhost:5000
+```
+
+**Features:**
+- Modern, ChatGPT-inspired interface with dark theme
+- Real-time chat interactions
+- Conversation history management
+- Responsive design for desktop and mobile
+- Easy-to-use example prompts to get started
+
+**📘 For detailed frontend documentation, screenshots, and customization guide, see [FRONTEND_GUIDE.md](FRONTEND_GUIDE.md)**
+
+### Option 2: Command-Line Interface
+
+Start the traditional CLI chatbot with:
 ```bash
 python chatbot.py
 ```
 
-### Available Commands
+### CLI Commands
 
-Once the chatbot is running, you can use these commands:
+Once the CLI chatbot is running, you can use these commands:
 
 - Type any question to chat with the bot
 - `history` - View the conversation history
@@ -87,10 +116,13 @@ augmentation, and generation...
 
 ```
 Chatbot_agentic_RAG/
-├── chatbot.py              # Main application entry point
+├── app.py                  # Web application (Flask) - NEW! 🌐
+├── chatbot.py              # CLI application entry point
 ├── requirements.txt        # Python dependencies
 ├── .env.example           # Example environment variables
 ├── .gitignore             # Git ignore file
+├── templates/             # HTML templates for web interface
+│   └── index.html         # Main chat interface
 ├── data/
 │   └── documents/         # Place your documents here (.txt files)
 ├── src/
