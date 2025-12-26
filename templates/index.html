@@ -514,7 +514,16 @@
             
             const contentDiv = document.createElement('div');
             contentDiv.className = 'message-content';
-            contentDiv.innerHTML = '<div class="loading"><div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div></div>';
+            
+            // Create loading animation without innerHTML
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'loading';
+            for (let i = 0; i < 3; i++) {
+                const dot = document.createElement('div');
+                dot.className = 'loading-dot';
+                loadingDiv.appendChild(dot);
+            }
+            contentDiv.appendChild(loadingDiv);
             
             messageDiv.appendChild(avatar);
             messageDiv.appendChild(contentDiv);
@@ -611,27 +620,49 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    // Clear messages
+                    // Clear messages and recreate empty state without innerHTML
                     const messagesContainer = document.getElementById('messages-container');
-                    messagesContainer.innerHTML = `
-                        <div class="empty-state" id="empty-state">
-                            <h2>How can I help you today?</h2>
-                            <div class="example-prompts">
-                                <div class="example-prompt" onclick="sendExamplePrompt('What is RAG?')">
-                                    <div class="example-prompt-title">📚 Learn about RAG</div>
-                                    <div class="example-prompt-text">What is RAG?</div>
-                                </div>
-                                <div class="example-prompt" onclick="sendExamplePrompt('Explain Python best practices')">
-                                    <div class="example-prompt-title">🐍 Python Tips</div>
-                                    <div class="example-prompt-text">Explain Python best practices</div>
-                                </div>
-                                <div class="example-prompt" onclick="sendExamplePrompt('Tell me about AI basics')">
-                                    <div class="example-prompt-title">🧠 AI Fundamentals</div>
-                                    <div class="example-prompt-text">Tell me about AI basics</div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
+                    messagesContainer.textContent = ''; // Clear all children
+                    
+                    // Recreate empty state
+                    const emptyState = document.createElement('div');
+                    emptyState.className = 'empty-state';
+                    emptyState.id = 'empty-state';
+                    
+                    const heading = document.createElement('h2');
+                    heading.textContent = 'How can I help you today?';
+                    emptyState.appendChild(heading);
+                    
+                    const examplePromptsDiv = document.createElement('div');
+                    examplePromptsDiv.className = 'example-prompts';
+                    
+                    // Create example prompts
+                    const examples = [
+                        { emoji: '📚', title: 'Learn about RAG', text: 'What is RAG?' },
+                        { emoji: '🐍', title: 'Python Tips', text: 'Explain Python best practices' },
+                        { emoji: '🧠', title: 'AI Fundamentals', text: 'Tell me about AI basics' }
+                    ];
+                    
+                    examples.forEach(example => {
+                        const promptDiv = document.createElement('div');
+                        promptDiv.className = 'example-prompt';
+                        promptDiv.onclick = () => sendExamplePrompt(example.text);
+                        
+                        const titleDiv = document.createElement('div');
+                        titleDiv.className = 'example-prompt-title';
+                        titleDiv.textContent = `${example.emoji} ${example.title}`;
+                        
+                        const textDiv = document.createElement('div');
+                        textDiv.className = 'example-prompt-text';
+                        textDiv.textContent = example.text;
+                        
+                        promptDiv.appendChild(titleDiv);
+                        promptDiv.appendChild(textDiv);
+                        examplePromptsDiv.appendChild(promptDiv);
+                    });
+                    
+                    emptyState.appendChild(examplePromptsDiv);
+                    messagesContainer.appendChild(emptyState);
                 } else {
                     showError(data.error || 'Failed to reset chat');
                 }
